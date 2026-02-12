@@ -18,7 +18,9 @@ local triggerEventHooks = require '@qbx_core.modules.hooks'
 ---@param plate string
 ---@return boolean
 local function doesEntityPlateExist(plate)
-    local result = MySQL.scalar.await('SELECT 1 FROM player_vehicles WHERE plate = ? LIMIT 1', {plate})
+    local result = MySQL.scalar.await('SELECT 1 FROM player_vehicles WHERE plate = ? LIMIT 1', {
+        qbx.string.trim(plate)
+    })
     return result ~= nil
 end
 
@@ -160,7 +162,7 @@ local function createPlayerVehicle(request)
         vehicle = request.model,
         hash = props.model,
         mods = json.encode(props),
-        plate = props.plate,
+        plate = qbx.string.trim(props.plate),
         state = request.garage and State.GARAGED or State.OUT,
         garage = request.garage
     })
@@ -249,7 +251,7 @@ local function buildSaveVehicleQuery(vehicleId, options)
 
         if options.props.plate then
             crumbs[#crumbs+1] = 'plate = ?'
-            placeholders[#placeholders+1] = options.props.plate
+            placeholders[#placeholders+1] = qbx.string.trim(options.props.plate)
         end
 
         if options.props.fuelLevel then
